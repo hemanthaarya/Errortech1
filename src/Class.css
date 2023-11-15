@@ -1,0 +1,61 @@
+.doctor-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+  }
+  
+  h1 {
+    font-size: 28px;
+    margin-bottom: 10px;
+  }
+  
+  h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  h3 {
+    font-size: 20px;
+    margin-top: 20px;
+    margin-bottom: 10px;
+  }
+  
+  p {
+    margin-bottom: 10px;
+  }
+  
+  ul {
+    margin-bottom: 10px;
+    padding-left: 20px;
+  }
+  
+  .testimonials-container {
+    display: grid;
+    gap: 10px;
+  }
+  
+  .testimonial {
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+  
+  .testimonial-text {
+    margin-bottom: 5px;
+  }
+  
+  .testimonial-author {
+    font-style: italic;
+  }
+  
+  .appointment-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .appointment-button:hover {
+    background-color: #0056b3;
+  }
