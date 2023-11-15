@@ -3,8 +3,6 @@ import './ErrorTech.css';
 import axios from 'axios';
 import {BiShoppingBag,BiGridSmall,BiExpand,BiSearchAlt2 } from "react-icons/bi";
 import { Link } from 'react-router-dom';
-import ShopPage from './ShopPage';
-import CartPage from './CartPage';
 
 function HomePage() {
     const [toggleOn, setToggleOn] = useState(false);
@@ -23,13 +21,12 @@ function HomePage() {
         };
 
         fetchData();
-    }, []);
+    }, [products]);
 
 
   const handleToggle = () => {
     setToggleOn(!toggleOn);
   };
-  const linkClass = toggleOn ? 'link-hover-effect' : 'link';
   document.body.className = toggleOn ? 'red-background' : '';
   return (
     <div className={`main-container ${toggleOn ? '' : ''}`}>

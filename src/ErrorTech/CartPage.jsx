@@ -11,10 +11,10 @@ const CartPage = () => {
   };
   document.body.className = toggleOn ? 'red-background' : '';
 
-    const [count,setCount]=useState(0);
-    const [productCount,setProductCount]=useState(0)
-    const [productPrice,setProductPrice]=useState(0)
-    const [poductText,setProductText]=useState("")
+    const [count]=useState(0);
+    const [productCount]=useState(0)
+    const [productPrice]=useState(0)
+    const [poductText]=useState("")
   return (
     <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",height:"95vh"}}>
         <div className='Navbar'>

@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {  useState } from 'react';
 import './ErrorTech.css'
 import {BiShoppingBag,BiGridSmall,BiSearchAlt2 } from "react-icons/bi";
 import { Link } from 'react-router-dom';
@@ -22,16 +22,14 @@ function LoginPage() {
     })
       .then((res) => res.json())
       .then((json) => {
-        setLogin(true)
+        
       })
       .catch((error) => {
         console.error('Error during login:', error);
       });
   };
   document.body.className = toggleOn ? 'red-background' : '';
-    const [login,setLogin]=useState(false);
-    const[email,setEmail]=useState("")
-    const[password,setPassword]=useState("")
+    
    
   return (
     <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",width:"100vw",height:"100vh"}}>
@@ -68,13 +66,13 @@ function LoginPage() {
                 <p style={toggleOn ? {color:"white"} : null}>E-mail:</p>
             </div>
             <div className='Input'>
-                <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} onChange={(e)=>{setEmail(e.target.value)}} type='text' placeholder='abc@example.com'/>
+                <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null}  type='text' placeholder='abc@example.com'/>
             </div>
             <div className='Tit'>
                 <p style={toggleOn ? {color:"white"} : null}>Password:</p>
             </div>
             <div className='Input'>
-                <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} onChange={(e)=>{setPassword(e.target.value)}} type='password'/>
+                <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null}  type='password'/>
             </div>
             <div className='ButtonContainer'>
                 <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} onClick={handleLogin}>Login</button>

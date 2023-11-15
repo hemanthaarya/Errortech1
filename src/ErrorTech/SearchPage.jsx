@@ -13,7 +13,7 @@ const SearchPage = () => {
     let response;
     useEffect(()=>{
         !_.isEmpty(products) && navigate(`/ShopPage`,{state:products})
-    },[products])
+    },[products,navigate])
 
     const fetchData = async () => {
         try {
