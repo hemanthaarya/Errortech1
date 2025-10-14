@@ -1,25 +1,98 @@
-import React,{useEffect, useState}from 'react';
-import {BiShoppingBag,BiGridSmall,BiExpand,BiSearchAlt2,BiSolidStar,BiSolidChevronRight,BiSolidChevronLeft,BiSolidStarHalf} from "react-icons/bi";
-import { Link } from 'react-router-dom';
-import {useLocation} from 'react-router-dom';
+import {useEffect, useState,useContext}from 'react';
+import {BiShoppingBag,BiGridSmall,BiExpand,BiSolidStar,BiSolidChevronRight,BiSolidChevronLeft,BiSolidStarHalf} from "react-icons/bi";
+import { Link,useParams } from 'react-router-dom';
+import data from './Data.js';
+import UserContext from './userContext.jsx';
+import { ImCross } from 'react-icons/im';
 
 
 function ShopPage() {
     const [toggleOn, setToggleOn] = useState(false);
-    
-    const [image, setImage] = useState("https://shophub-demo.netlify.app/images/shoe1.png");
-    let a = useLocation().state;
+    const [toggleMenu, setToggleMenu] = useState(false);
+    const { id } = useParams();
+    const product = data.find((item) => item.id === parseInt(id));
+    const [image, setImage] = useState(product ? product.img : '');
+    const [selectedSize, setSelectedSize] = useState(0);
+    const {isLoggedIn}=useContext(UserContext);
+
+
     useEffect(() => {
-        if (a && typeof a === 'object' && 'image' in a) {
-          setImage(a.image);
+        setImage(product.img);
+    }, [product]);
+    if (!product) {
+        return <h2 style={{ textAlign: "center", marginTop: "50px" }}>Product Not Found</h2>;
+    }
+    const stars = [];
+    const fullStars = Math.floor(product.rating);
+    const hasHalfStar = product.rating % 1 !== 0;
+
+    for (let i = 0; i < fullStars; i++) {
+        stars.push(<BiSolidStar key={i} style={{ width: "20px", height: "20px", color: "orange" }} />);
+    }
+
+    if (hasHalfStar) {
+        stars.push(<BiSolidStarHalf key="half" style={{ width: "20px", height: "20px", color: "orange" }} />);
+    }
+
+    while (stars.length < 5) {
+        stars.push(<BiSolidStar key={`empty-${stars.length}`} style={{ width: "20px", height: "20px", color: "lightgray" }} />);
+    }
+
+    const addToCart = (product, selectedSize) => {
+    if (!selectedSize) {
+        alert("Please select a size before adding to cart.");
+        return;
+    }
+
+    // get currentUser from localStorage
+    const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+        if (!currentUser) {
+            alert("You must log in to add items to cart.");
+            return;
         }
-      }, [a]);
 
-    
+        // get existing cart or empty
+        let updatedCart = currentUser.cart || [];
 
-  function handleToggle() {
+        // check if item already exists
+        const existingItemIndex = updatedCart.findIndex(
+            (item) => item.id === product.id && item.size === selectedSize
+        );
+
+        if (existingItemIndex !== -1) {
+            // increase qty
+            updatedCart[existingItemIndex].qty += 1;
+        } else {
+            updatedCart.push({
+            id: product.id,
+            name: product.imgText,
+            size: selectedSize,
+            qty: 1,
+            price: product.price,
+            img: product.img,
+            });
+        }
+
+        // update currentUser
+        const updatedUser = { ...currentUser, cart: updatedCart };
+        localStorage.setItem("currentUser", JSON.stringify(updatedUser));
+
+        // update users list also
+        const users = JSON.parse(localStorage.getItem("users")) || [];
+        const updatedUsers = users.map((u) =>
+            u.email === currentUser.email ? updatedUser : u
+        );
+        localStorage.setItem("users", JSON.stringify(updatedUsers));
+
+        setSelectedSize(0);
+    };
+
+
+
+    function handleToggle() {
         setToggleOn(!toggleOn);
     }
+
   document.body.className = toggleOn ? 'red-background' : '';
   return (
     <div>
@@ -32,22 +105,32 @@ function ShopPage() {
             </div>
             <div className='PagesCpntainer'>
                 <Link className='link' to="/"><div>Home</div></Link>
-                <Link className='link' to="/ShopPage"><div style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}>Shop</div></Link>
-                <Link className='link' to="/BlogPage"><div>Blog</div></Link>
-                <Link className='link' to="/ContactPage"><div>Contact</div></Link>
-                <Link className='link' to="/LoginPage"><div>Login</div></Link>
-                <Link className='link' to="/RegisterPage"><div>Register</div></Link>
-                <Link className='link' to="/MyAccountPage"><div>My Account</div></Link>
+                <Link className='link' to="/ShopPage/1"><div style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}>Shop</div></Link>
+                <Link className="link" to="/LoginPage"><div style={isLoggedIn ? {display:"none"}:{display:"block"}}>Login</div></Link>
+                <Link className="link" to="/MyAccountPage"><div style={isLoggedIn ?{display:"block"}:{display:"none"}}>My Account</div></Link>
             </div>
-            <div className='ShopCOntainer'>
+            <div className={`ShopCOntainer ${isLoggedIn ? "show" : "hide"}`}>
                 <Link to="/CartPage" className='link'>
                     <div className='Logo' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
                         <BiShoppingBag style={{width:"20px",marginTop:"8px",height:"20px"}}/>
                     </div>
                 </Link>
             </div>
+            <div className='mobile-menu-container' onClick={()=>setToggleMenu(!toggleMenu)} style={toggleMenu ? { display: 'none' } : null}>
+                <span>.</span>
+                <span>.</span>
+                <span>.</span>
+            </div>
+            <div className='mobile-menu' style={toggleMenu ? { display: 'block' } : { display: 'none' }}>
+                <span style={{textAlign:"end",cursor:"pointer",color:"red"}}><ImCross onClick={()=>{setToggleMenu(!toggleMenu)}}/></span>
+                <Link className='link' to="/"><div>Home</div></Link>
+                <Link className='link' to="/ShopPage/1"><div>Shop</div></Link>
+                <Link className="link" to="/LoginPage"><div style={isLoggedIn ? {display:"none"}:{display:"block"}}>Login</div></Link>
+                <Link className="link" to="/MyAccountPage"><div style={isLoggedIn ?{display:"block"}:{display:"none"}}>My Account</div></Link>
+                <Link to="/CartPage" className='link'><div>Cart</div></Link>
+            </div>
         </div>
-        <div className='OrangeContainer' style={toggleOn ? { backgroundColor: '#2c59c9'  } : null}>
+        <div className='OrangeContainer' style={{zIndex:"-1",...(toggleOn ? { backgroundColor: '#2c59c9'  } : null)}}>
             <div className='Home'>Home<span style={{color:"black"}}>/Product Details</span></div>
             <div className='Shop'>
                 <h3>Product Details</h3>
@@ -57,200 +140,119 @@ function ShopPage() {
                 <div style={{backgroundColor:"#f1d6c4",borderRadius:"50%",height:"30px"}}><BiSolidChevronRight style={{height:"30px",width:"30px"}}/></div>
             </div>
         </div>
-        <div className='ProductsContainer2'>
-                    <div className='Product1' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
+        <div className='ProductsContainer2' style={{zIndex:"1"}}>
+                <div className='Product1' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
+                    <div className='ProdContainer'>
+                        <div className='Circle' style={toggleOn ? { backgroundColor:"#172838",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
+                            <img src={image} alt="shoeimage" />
+                        </div>
                         <div className='TitlesContainer'>
-                            <h1 style={{color:"#4412b8",marginLeft:"20px",marginTop:"10px"}}>Nike Air Max 270 to Chunk Taylors</h1>
-                            <p style={{color:"gray",marginLeft:"20px",marginTop:"5px",fontWeight:"bold"}}>Nike's Air Force 1s were among the most popular sneakers this year</p>
-                            <div className='ImgContainer'>
-                                <div style={{backgroundColor:"#ffecc5",boxShadow:"inset 0 0 2rem 0.5rem #fff",padding:"10px",borderRadius:"10px",cursor:"pointer"}}>
-                                    <img style={{width:"100px",height:"50px"}} src="https://shophub-demo.netlify.app/images/shoe2.png" alt="shoe image2" />
-                                </div>
-                                <div style={{backgroundColor:"#fa8907",padding:"10px",borderRadius:"10px",cursor:"pointer"}}>
-                                    <img style={{width:"100px",height:"50px"}} src="https://shophub-demo.netlify.app/images/shoe3.png" alt="shoe image3" />
-                                </div>
-                                <div style={{backgroundColor:"#ffecc5",boxShadow:"inset 0 0 2rem 0.5rem #fff",padding:"10px",borderRadius:"10px",cursor:"pointer"}}>
-                                    <img style={{width:"100px",height:"50px"}} src="https://shophub-demo.netlify.app/images/shoe4.png" alt="shoe image4" />
-                                </div>
-                            </div>
-
-                        </div>
-                        <div className='ProdContainer'>
-                            <div className='Circle' style={toggleOn ? { backgroundColor:"#172838",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-                                <img style={{width:"220px",height:"100px"}} src={image} alt="shoeimage" />
-                            </div>
-
-                        </div>
-                        <div className='ReviewContainer'>
-                            <div className='reviewTitle'>
-                                <h3>Review:</h3>
-                            </div>
-                            <div className='Stars'>
-                                <BiSolidStar style={{width:"25px",height:"25px",color:"orange"}}/>
-                                <BiSolidStar style={{width:"25px",height:"25px",color:"orange"}}/>
-                                <BiSolidStar style={{width:"25px",height:"25px",color:"orange"}}/>
-                                <BiSolidStar style={{width:"25px",height:"25px",color:"orange"}}/>
-                                <BiSolidStarHalf style={{width:"25px",height:"25px",color:"orange"}}/>
-                                <span style={{fontSize:"20px",fontWeight:"bold"}}>4.5(60)</span>
-                            </div>
-                            <div className='ColorTitle'>
-                                <h3>Select Color:</h3>
-                            </div>
-                            <div className='ColorContainer'>
-                                <svg width={50} height={50}>
-                                    <circle style={toggleOn ? { fill: '#1c3d1c',stroke:"black" } : null} stroke='white' strokeWidth={5} cy={20} cx={20} r={15} fill='rgb(240, 150, 158)'></circle>
-                                </svg>
-                                <svg width={50} height={50}>
-                                    <circle style={toggleOn ? { fill: '#252625',stroke:"black" } : null} stroke='white' strokeWidth={5} cy={20} cx={20} r={15} fill='rgb(213, 213, 212)'></circle>
-                                </svg>
-                                <svg width={50} height={50}>
-                                    <circle style={toggleOn ? { fill: 'white',stroke:"black" } : null} stroke='white' strokeWidth={5} cy={20} cx={20} r={15}></circle>
-                                </svg>
-                                <svg width={50} height={50}>
-                                    <circle style={toggleOn ? { fill: '#14ccc3',stroke:"black" } : null} stroke='white' strokeWidth={5} cy={20} cx={20} r={15} fill='rgb(203, 20, 26)'></circle>
-                                </svg>
-                            </div>
-                            <div className='SizeTitle'>
-                                <h3>Select Size:</h3>
-                            </div>
-                            <div className='SizeContainer'>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>41</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>42</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>43</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>44</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>45</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>46</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>47</div>
-                                <div className='Size' style={toggleOn ? { backgroundColor: '#172838',color:"white",boxShadow:" inset 0 0 5rem 2rem #000"} : null}>48</div>
-                            </div>
-                            <div className='ButtonContainer' >
-                                <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} disabled>Add To Cart</button>
-                            </div>
+                            <h1 style={toggleOn ? {color:"white"} : null }>{product.imgText}</h1>
                         </div>
                     </div>
+                    <div className='detailsContainer' style={toggleOn ? {color:"white"} : null}>
+                        <div className='ReviewContainer'>
+                            <div>
+                                <div className='reviewTitle' style={{textAlign:"center"}}>
+                                    <h3>Review:</h3>
+                                </div>
+                                <div className='Stars'>
+                                    {stars}
+                                    <span style={{fontSize:"20px",fontWeight:"bold"}}>{product.rating}</span>
+                                </div>
+                            </div>
+                            <div>
+                                <div className='ColorTitle'>
+                                    <h3>Select Color:</h3>
+                                </div>
+                                <div className='ColorContainer'>
+                                    {data.map((item,index)=>(
+                                        <Link to={`/ShopPage/${item.id}`} key={index} className='link'>
+                                            <svg key={index} width={50} height={50}>
+                                                <circle style={toggleOn ? { fill:item.color,stroke:"black" } : null} stroke='white' strokeWidth={5} cy={20} cx={20} r={15} fill={item.color}></circle>
+                                            </svg>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </div>
+                            <div>
+                                <div className='SizeTitle'>
+                                    <h3>Select Size:</h3>
+                                </div>
+                                <div className='SizeContainer'>
+                                {product.size.map((item) => (
+                                    <div className='Size' onClick={() => {setSelectedSize(item);}}
+                                    style={{
+                                        backgroundColor: selectedSize === item 
+                                        ? "#4412b8"
+                                        : toggleOn 
+                                            ? "#172838" 
+                                            : "white",
+                                        color: selectedSize === item ? "white" : toggleOn ? "white" : "black",
+                                        boxShadow: selectedSize === item 
+                                        ? "0px 0px 10px rgba(0,0,0,0.4)" 
+                                        : toggleOn 
+                                            ? "inset 0 0 5rem 2rem #000" 
+                                            : "none",
+                                        cursor: "pointer",
+                                        padding: "8px 15px",
+                                        borderRadius: "8px",
+                                        margin: "5px"
+                                    }}
+                                    >
+                                    {item}
+                                    </div>
+                                ))}
+                                </div>
+                            </div>
+                        </div>
+                        <div className='ButtonContainer' >
+                            <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} onClick={()=>addToCart(product,selectedSize)}>Add To Cart</button>
+                        </div>
+                    </div>
+                </div>
         </div>
-        <div style={{marginTop:"50px"}}>
+        <div className='Relate'>
             <h1 style={toggleOn ?{color:"white",textAlign:"center",fontSize:"25px"}:{textAlign:"center",fontSize:"25px"}}>Related Products</h1>
         </div>
-        <Link to="/SearchPage" className='link'>
-                <div className='L3'>
-                    <BiSearchAlt2  style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                </div>
-        </Link>
-        <div className='ProductsContainer1'>
-        <div className='Product' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-                <div className='Lexpand'>
-                    <div className='L1'style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiExpand style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                    <div className='L2' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiShoppingBag style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                </div>
-                <div>
-                    <div className='C1'>
-                        <svg width="200" height="200">
-                            <circle stroke='white' strokeWidth={5} cx="90" cy="40" r="60" fill='#f57e2f'></circle>
-                        </svg>
-                    </div>
-                </div>
-                <div style={{height:"150px"}}>
-                    <img className='img' src='https://shophub-demo.netlify.app/images/shoe1.png' alt='shoeimage'/>
-                </div>
-                <div>
-                    <h3 style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>
-                        Nike air max 270 to
-                        chuck taylors 
-                    </h3>
-                    <p style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>336</p>
-                </div>
-            </div>
-            <div className='Product' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-                <div className='Lexpand'>
-                    <div className='L1' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiExpand style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                    <div className='L2' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiShoppingBag style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                </div>
-                <div>
-                    <div className='C2'>
-                        <svg width="200" height="200">
-                            <circle stroke='white' strokeWidth={5} cx="90" cy="40" r="60" fill='#f57e2f'></circle>
-                        </svg>
-                    </div>
-                </div>
-                <div style={{height:"150px"}}>
-                    <img className='img' src='https://shophub-demo.netlify.app/images/shoe2.png' alt='shoeimage'/>
-                </div>
-                <div>
-                    <h3 style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>
-                        Nike air max 1
-                    </h3>
-                    <p style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>300</p>
-                </div>
-
-            </div>
-            <div className='Product' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-                <div className='Lexpand'>
-                    <div className='L1' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiExpand style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                    <div className='L2' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiShoppingBag style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                </div>
-                <div>
-                    <div className='C3'>
-                        <svg width="200" height="200">
-                            <circle stroke='white' strokeWidth={5} cx="90" cy="40" r="60" fill='#f57e2f'></circle>
-                        </svg>
-                    </div>
-                </div>
-                <div style={{height:"150px"}}>
-                    <img className='img' src='https://shophub-demo.netlify.app/images/shoe3.png' alt='shoeimage'/>
-                </div>
-                <div>
-                    <h3 style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>
-                        Nike air max 95
-                    </h3>
-                    <p style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>400</p>
-                </div>
-
-            </div>
-            <div className='Product' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-                <div className='Lexpand'>
-                    <div className='L1' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiExpand style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                    <div className='L2' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiShoppingBag style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                    </div>
-                </div>
-                <div>
-                    <div className='C4'>
-                        <svg width="200" height="200">
-                            <circle stroke='white' strokeWidth={5} cx="90" cy="40" r="60" fill='#f57e2f'></circle>
-                        </svg>
-                    </div>
-                </div>
-                <div style={{height:"150px"}}>
-                    <img className='img' src='https://shophub-demo.netlify.app/images/shoe4.png' alt='shoeimage'/>
-                </div>
-                <div>
-                    <h3 style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>
-                        Nike air max 97
-                    </h3>
-                    <p style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>500</p>
-                </div>
+        <div className="ProductsSection">
+            <div className='ProductsContainer1'>
+                {
+                    data.map((item)=>(
+                        <div className='R_Product' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
+                            <div className='Lexpand'>
+                                <Link to={`/ShopPage/${item.id}`} className='link'>
+                                    <div className='L1' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
+                                        <BiExpand style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
+                                    </div>
+                                </Link>
+                                <Link to={`/ShopPage/${item.id}`} className='link'>
+                                    <div className='L2' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
+                                        <BiShoppingBag style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
+                                    </div>
+                                </Link>
+                            </div>
+                            <div>
+                                <div className='C2' style={toggleOn ? { backgroundColor:"#252625"  } : null}>
+                                    <svg width="200" height="200">
+                                        <circle style={toggleOn ? { fill: '#2c59c9',stroke:"#2f2c4f" } : null} stroke='white' strokeWidth={5} cx="90" cy="40" r="60" fill='#f57e2f'></circle>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div style={{height:"150px"}}>
+                                <img className='img' src={item.img} alt='shoeimage'/>
+                            </div>
+                            <div>
+                                <h3 style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}} >
+                                    {item.imgText}
+                                </h3>
+                                <p style={toggleOn ? {textAlign:"center",color:"orange",fontWeight:"bold"} : {textAlign:"center",color:"#4412b8",fontWeight:"bold"}}>{item.price}$</p>
+                            </div>
+                        </div>
+                    ))
+                }
             </div>
         </div>
-        <Link to="/SearchPage" className='link'>
-                <div className='L3' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                    <BiSearchAlt2  style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-                </div>
-        </Link>
         <div className='toggle-container' style={toggleOn ? {backgroundColor:"black"} : null}>
             <label className='toggle-label' style={toggleOn ? {color:"white"} : null}>
                 <input type='checkbox' className='toggle-input'  onChange={handleToggle} />

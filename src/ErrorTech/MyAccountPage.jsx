@@ -1,122 +1,194 @@
-import React,{useState}from 'react';
-import './ErrorTech.css'
-import {BiShoppingBag,BiGridSmall,BiSearchAlt2,BiTrash,BiSolidInfoCircle } from "react-icons/bi";
+import { useState, useContext } from 'react';
+import './ErrorTech.css';
+import { BiShoppingBag, BiGridSmall } from "react-icons/bi";
 import { Link } from 'react-router-dom';
+import UserContext from './userContext';
 
 function MyAccountPage() {
-    const [toggleOn, setToggleOn] = useState(false);
+  const [toggleOn, setToggleOn] = useState(false);
+  const { setIsLoggedIn } = useContext(UserContext);
+  const [up, setUp] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [retypePassword, setRetypePassword] = useState("");
 
-  const handleToggle = () => {
-    setToggleOn(!toggleOn);
-  };
+  const currentUser = JSON.parse(localStorage.getItem("currentUser"));
+  const orders = currentUser?.orders || [];
+
+  const handleToggle = () => setToggleOn(!toggleOn);
+
   document.body.className = toggleOn ? 'red-background' : '';
+
+  const handlePasswordUpdate = () => {
+    if (!email || !password || !newPassword || !retypePassword) {
+      alert("Please fill all details");
+      return;
+    }
+
+    if (newPassword !== retypePassword) {
+      alert("New Password and Retype Password do not match");
+      return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || [];
+    const userIndex = users.findIndex(u => u.email === email && u.password === password);
+
+    if (userIndex === -1) {
+      alert("Invalid email or current password");
+      setEmail("");
+      setPassword("");
+      setNewPassword("");
+      setRetypePassword("");
+      return;
+    }
+
+    users[userIndex].password = newPassword;
+    localStorage.setItem("users", JSON.stringify(users));
+
+    alert("Password updated successfully ✅");
+    setEmail("");
+    setPassword("");
+    setNewPassword("");
+    setRetypePassword("");
+    setUp(false);
+  };
+
   return (
-    <div style={{display:"flex",flexDirection:"column",justifyContent:"space-between",width:"100vw",height:"100vh"}}>
-        <div className='Navbar'>
-            <div className='LogoContainer'>
-                <div className='Logo' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                    <BiGridSmall style={{width:"30px",marginTop:"5px",height:"30px"}}/>
+    <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between", width: "98vw", height: "97vh" }}>
+      
+      <div className='Navbar'>
+        <Link className='link' to="/">
+          <div className='LogoContainer'>
+            <div className='Logo' style={toggleOn ? { backgroundColor: 'black', color: "white" } : null}>
+              <BiGridSmall style={{ width: "30px", marginTop: "5px", height: "30px" }} />
+            </div>
+            <h2>shophub</h2>
+          </div>
+        </Link>
+        <div className='PagesCpntainer'>
+          <Link className='link' to="/"><div>Home</div></Link>
+          <Link className='link' to="/ShopPage/1"><div>Shop</div></Link>
+          <Link className='link' to="/MyAccountPage">
+            <div style={toggleOn ? { color: 'lightblue' } : { color: "#7d2804" }}>My Account</div>
+          </Link>
+        </div>
+        <div className='ShopCOntainer'>
+          <Link to="/CartPage" className='link'>
+            <div className='Logo' style={toggleOn ? { backgroundColor: 'black', color: "white" } : null}>
+              <BiShoppingBag style={{ width: "20px", marginTop: "8px", height: "20px" }} />
+            </div>
+          </Link>
+        </div>
+      </div>
+
+      <div className='Product5' style={toggleOn ? { backgroundColor: "#172838", backgroundImage: "radial-gradient(#2f2c4f 8%,transparent 0)", boxShadow: "inset 0 0 5rem 2rem #000" } : null}>
+        <div style={{ marginTop: "15px" }}>
+          <div className='Tit'>
+            <h1 style={toggleOn ? { color: "white" } : null}>Order Details</h1>
+          </div>
+
+          <div className="OrdersContainer">
+            {orders.length > 0 ? (
+              orders.map((order, index) => (
+                <div key={index} className="OrderCard" style={toggleOn ? { borderColor: "#14ccc3" } : null}>
+                  <h3 style={toggleOn ? { color: "lightblue" } : null}>
+                    🧾 Order #{index + 1} — {order.date}
+                  </h3>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Product Name</th>
+                        <th>Size</th>
+                        <th>Qty</th>
+                        <th>Price</th>
+                        <th>Total Price</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {order.items.map((item, i) => (
+                        <tr key={i}>
+                          <td>{item.name}</td>
+                          <td>{item.size}</td>
+                          <td>{item.qty}</td>
+                          <td>${item.price}</td>
+                          <td>${item.qty*item.price}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
                 </div>
-                <h2>shophub</h2>
+              ))
+            ) : (
+              <h4 style={{ textAlign: "center" }}>No orders found in this account 🛍️</h4>
+            )}
+          </div>
+
+          {up && (
+            <div className='UpdatePasswordBox'>
+              <h2 style={toggleOn ? { color: "white" } : null}>Update Password</h2>
+
+              <label style={toggleOn ? { color: "white" } : null}>E-mail:</label>
+              <input
+                style={toggleOn ? { backgroundColor: "black", color: "white" } : null}
+                type='text'
+                placeholder='abc@example.com'
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+              />
+
+              <label style={toggleOn ? { color: "white" } : null}>Current Password:</label>
+              <input
+                style={toggleOn ? { backgroundColor: "black", color: "white" } : null}
+                type='password'
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+              />
+
+              <label style={toggleOn ? { color: "white" } : null}>New Password:</label>
+              <input
+                style={toggleOn ? { backgroundColor: "black", color: "white" } : null}
+                type='password'
+                value={newPassword}
+                onChange={e => setNewPassword(e.target.value)}
+              />
+
+              <label style={toggleOn ? { color: "white" } : null}>Re-type Password:</label>
+              <input
+                style={toggleOn ? { backgroundColor: "black", color: "white" } : null}
+                type='password'
+                value={retypePassword}
+                onChange={e => setRetypePassword(e.target.value)}
+              />
+
+              <div className='ButtonContainer'>
+                <button style={toggleOn ? { backgroundColor: '#677480', color: "lightblue" } : null} onClick={handlePasswordUpdate}>Update Password</button>
+                <button style={toggleOn ? { backgroundColor: '#677480', color: "lightblue" } : null} onClick={() => setUp(false)}>Cancel</button>
+              </div>
             </div>
-            <div className='PagesCpntainer'>
-                <Link className='link' to="/"><div>Home</div></Link>
-                <Link className='link' to="/ShopPage"><div>Shop</div></Link>
-                <Link className='link' to="/BlogPage"><div>Blog</div></Link>
-                <Link className='link' to="/ContactPage"><div>Contact</div></Link>
-                <Link className='link' to="/LoginPage"><div>Login</div></Link>
-                <Link className='link' to="/RegisterPage"><div>Register</div></Link>
-                <Link className='link' to="/MyAccountPage"><div style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}>My Account</div></Link>
-            </div>
-            <div className='ShopCOntainer'>
-                <Link to="/CartPage" className='link'>
-                    <div className='Logo' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                        <BiShoppingBag style={{width:"20px",marginTop:"8px",height:"20px"}}/>
-                    </div>
-                </Link>
-            </div>
+          )}
         </div>
 
-        <div className='Product5' style={toggleOn ? { backgroundColor:"#172838",backgroundImage:"radial-gradient(#2f2c4f 8%,transparent 0)",boxShadow:" inset 0 0 5rem 2rem #000" } : null}>
-            <div style={{height:"70vh",width:"30vw",display:"flex",flexDirection:"column",justifyContent:"space-evenly"}}>
-                <div className='Tit'>
-                    <h1 style={toggleOn ? {color:"white"} : null}>Update Password</h1>
-                </div>
-                <div className='Tit'>
-                    <p style={toggleOn ? {color:"white"} : null}>E-mail:</p>
-                </div>
-                <div className='Input'>
-                    <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} type='text' placeholder='abc@example.com'/>
-                </div>
-                <div className='Tit'>
-                    <p style={toggleOn ? {color:"white"} : null}>Current Password:</p>
-                </div>
-                <div className='Input'>
-                    <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} type='password'/>
-                </div>
-                <div className='Tit'>
-                    <p style={toggleOn ? {color:"white"} : null}>New Password:</p>
-                </div>
-                <div className='Input'>
-                    <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} type='password'/>
-                </div>
-                <div className='Tit'>
-                    <p style={toggleOn ? {color:"white"} : null}>Re-type Password:</p>
-                </div>
-                <div className='Input'>
-                    <input style={toggleOn ? {backgroundColor:"black",color:"white"} : null} type='password'/>
-                </div>
-                <div className='ButtonContainer'>
-                    <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} disabled>Update Password</button>
-                </div>
-            </div>
-            <div style={{marginTop:"15px"}}>
-                <div className='Tit'>
-                    <h1 style={toggleOn ? {color:"white"} : null}>Order Details</h1>
-                </div>
-                <div>
-                    <table>
-                        <tr>
-                            <th style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>ORDER ID</th>
-                            <th style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>TIME STAMP</th>
-                            <th style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>TOTAL</th>
-                            <th style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>ACTIONS</th>
-                        </tr>
-                        <tr>
-                            <td style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>655c552e2</td>
-                            <td style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>221025102</td>
-                            <td style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}>350$</td>
-                            <td style={toggleOn ? {color:"white",borderColor:"#14ccc3"} : null}><BiSolidInfoCircle style={toggleOn ?{width:"25px",height:"25px",color:"blue"}:{width:"25px",height:"25px",color:"orange"}}/><BiTrash style={toggleOn ?{width:"25px",height:"25px",color:"#14ccc3"}:{width:"25px",height:"25px",color:"red"}}/></td>
-                        </tr>
-                    </table>
-                </div>
-            </div>
+        <div className='ButtonContainer' style={{ marginBottom: "20px" }}>
+          <button onClick={() => setUp(true)}>Update Account Details</button>
+          <Link to="/" className='link1'>
+            <button onClick={() => setIsLoggedIn(false)}>Sign Out</button>
+          </Link>
         </div>
-        <div></div>
-        <Link to="/SearchPage" className='link'>
-            <div className='L3' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                <BiSearchAlt2  style={{width:"25px",marginTop:"5px",height:"25px",marginLeft:"5px"}}/>
-            </div>
-        </Link>
-        <div className='toggle-container' style={toggleOn ? {backgroundColor:"black"} : null}>
-            <label className='toggle-label'>
-                <input type='checkbox' className='toggle-input'  onChange={handleToggle} />
-                <span className='slider'></span>
-            </label>
-        </div>
-        <div className='Footer'>
-            <div>
-                          
-            </div>
-            <div>
-                <p style={toggleOn ? {color:"white"} : null}>copyrights @ 2023 | all rights reserved</p>
-            </div>
-            <div>
-                
-            </div>
-        </div>
+      </div>
+
+      <div className='toggle-container' style={toggleOn ? { backgroundColor: "black" } : null}>
+        <label className='toggle-label'>
+          <input type='checkbox' className='toggle-input' onChange={handleToggle} />
+          <span className='slider'></span>
+        </label>
+      </div>
+
+      <div className='Footer'>
+        <p style={toggleOn ? { color: "white" } : null}>copyrights @ 2023 | all rights reserved</p>
+      </div>
     </div>
-  )
+  );
 }
 
-export default MyAccountPage
+export default MyAccountPage;
