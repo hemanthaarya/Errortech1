@@ -44,23 +44,20 @@ function ShopPage() {
         return;
     }
 
-    // get currentUser from localStorage
     const currentUser = JSON.parse(localStorage.getItem("currentUser"));
         if (!currentUser) {
             alert("You must log in to add items to cart.");
             return;
         }
 
-        // get existing cart or empty
         let updatedCart = currentUser.cart || [];
 
-        // check if item already exists
         const existingItemIndex = updatedCart.findIndex(
             (item) => item.id === product.id && item.size === selectedSize
         );
 
         if (existingItemIndex !== -1) {
-            // increase qty
+
             updatedCart[existingItemIndex].qty += 1;
         } else {
             updatedCart.push({
@@ -73,11 +70,10 @@ function ShopPage() {
             });
         }
 
-        // update currentUser
         const updatedUser = { ...currentUser, cart: updatedCart };
         localStorage.setItem("currentUser", JSON.stringify(updatedUser));
 
-        // update users list also
+
         const users = JSON.parse(localStorage.getItem("users")) || [];
         const updatedUsers = users.map((u) =>
             u.email === currentUser.email ? updatedUser : u
@@ -98,10 +94,8 @@ function ShopPage() {
     <div>
         <div className='Navbar'>
             <div className='LogoContainer'>
-                <div className='Logo' style={toggleOn ? { backgroundColor: 'black',color:"white"} : null}>
-                    <BiGridSmall style={{width:"30px",marginTop:"5px",height:"30px"}}/>
-                </div>
-                <h2>shophub</h2>
+                    <BiGridSmall style={{width:"30px",marginTop:"5px",height:"30px"}} className='Logo'/>
+                    <Link className='link' to="/" style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}><h2>ShopHub</h2></Link>
             </div>
             <div className='PagesCpntainer'>
                 <Link className='link' to="/"><div>Home</div></Link>
@@ -153,7 +147,7 @@ function ShopPage() {
                     <div className='detailsContainer' style={toggleOn ? {color:"white"} : null}>
                         <div className='ReviewContainer'>
                             <div>
-                                <div className='reviewTitle' style={{textAlign:"center"}}>
+                                <div className='reviewTitle'>
                                     <h3>Review:</h3>
                                 </div>
                                 <div className='Stars'>
@@ -205,9 +199,9 @@ function ShopPage() {
                                 ))}
                                 </div>
                             </div>
-                        </div>
-                        <div className='ButtonContainer' >
-                            <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} onClick={()=>addToCart(product,selectedSize)}>Add To Cart</button>
+                            <div className='ButtonContainer' >
+                                <button style={toggleOn ? { backgroundColor: '#677480',color:"lightblue"} : null} onClick={()=>addToCart(product,selectedSize)}>Add To Cart</button>
+                            </div>
                         </div>
                     </div>
                 </div>

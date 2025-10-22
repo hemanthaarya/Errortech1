@@ -373,14 +373,16 @@ body{
 .detailsContainer{
     display: flex;
     flex-direction: column;
+    
 }
 .ReviewContainer{
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: space-around;
     align-items: center;
     text-align: center;
     gap: 20px;
+    height: 65vh;
 }
 .SizeContainer{
     display: flex;
@@ -901,6 +903,9 @@ body{
     max-width: 100%;
     height: auto;
   }
+  .ReviewContainer{
+    flex-direction: column;
+  }
 }
 @media (max-width: 850px) {
     .Product1{
@@ -912,7 +917,7 @@ body{
         margin-top: 1px;
     }
     .ReviewContainer{
-        flex-direction: row;
+        flex-direction: column;
     }
     .Relate{
         margin-top: 280px;

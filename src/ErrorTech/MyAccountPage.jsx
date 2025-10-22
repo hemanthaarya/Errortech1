@@ -60,10 +60,8 @@ function MyAccountPage() {
       <div className='Navbar'>
         <Link className='link' to="/">
           <div className='LogoContainer'>
-            <div className='Logo' style={toggleOn ? { backgroundColor: 'black', color: "white" } : null}>
-              <BiGridSmall style={{ width: "30px", marginTop: "5px", height: "30px" }} />
-            </div>
-            <h2>shophub</h2>
+            <BiGridSmall style={{width:"30px",marginTop:"5px",height:"30px"}} className='Logo'/>
+            <Link className='link' to="/" style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}><h2>ShopHub</h2></Link>
           </div>
         </Link>
         <div className='PagesCpntainer'>

@@ -35,7 +35,7 @@ function HomePage() {
         <div className='Navbar'>
             <div className='LogoContainer'>
                     <BiGridSmall style={{width:"30px",marginTop:"5px",height:"30px"}} className='Logo'/>
-                    <h2>shophub</h2>
+                    <Link className='link' to="/" style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}><h2>ShopHub</h2></Link>
             </div>
             <div className='PagesCpntainer'>
                 <Link className='link' to="/" style={toggleOn ? { color: 'lightblue'  } : {color:"#7d2804"}}><div>Home</div></Link>
